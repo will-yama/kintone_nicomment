@@ -1,5 +1,5 @@
-function nicoscreenobj(o) {
-  var f = nicoscreenobj.f, i, len, n, prop;
+function niconicoscreenobj(o) {
+  var f = niconicoscreenobj.f, i, len, n, prop;
   f.prototype = o;
   n = new f;
   for (i=1, len=arguments.length; i<len; ++i)
@@ -8,7 +8,7 @@ function nicoscreenobj(o) {
   return n;
 }
 
-nicoscreenobj.f = function(){};
+niconicoscreenobj.f = function(){};
 
 var r9 = {};
 r9.NicoScreen = {
@@ -26,53 +26,53 @@ r9.NicoScreen = {
 	draw_index:0,
 	comments:[],
 		
-set:function(o){
-	
-	this.comments = o.comments;
-	
-	if(o.base.color){
-		this.env.color = o.base.color;
-	}
-	
-	if(o.base.loop){
-		this.env.loop = o.base.loop;
-	}
-	
-	if(o.base.interval){
+	set:function(o){
 		
-		switch(o.base.interval){
-			
-		case "fast":
-			this.env.interval=3000;
-			break;
-		case "slow":
-			this.env.interval=9500;
-			break;
-			
+		this.comments = o.comments;
+		
+		if(o.nicosettings.color){
+			this.env.color = o.nicosettings.color;
 		}
 		
-	}
+		if(o.nicosettings.loop){
+			this.env.loop = o.nicosettings.loop;
+		}
+		
+		if(o.nicosettings.interval){
+			
+			switch(o.nicosettings.interval){
 				
-		if(o.base.font_size){
-			this.env.font_size = o.base.font_size;
-		}
-		
-		if(o.base.speed){
-		
-			switch(o.base.speed){
-			
 			case "fast":
-				this.env.speed=4000;
+				this.env.interval=3000;
 				break;
 			case "slow":
-				this.env.speed=12000;
+				this.env.interval=9500;
 				break;
 				
 			}
-		
+			
 		}
-		
-	},
+					
+			if(o.nicosettings.font_size){
+				this.env.font_size = o.nicosettings.font_size;
+			}
+			
+			if(o.nicosettings.speed){
+			
+				switch(o.nicosettings.speed){
+				
+				case "fast":
+					this.env.speed=4000;
+					break;
+				case "slow":
+					this.env.speed=12000;
+					break;
+					
+				}
+			
+			}
+			
+		},
 			
 	start : function(){
 		
@@ -148,71 +148,65 @@ set:function(o){
 		}
 		
 		
-	};
+};
 
-		var nicoscreen = nicoscreenobj(r9.NicoScreen);
+var nicoscreen = niconicoscreenobj(r9.NicoScreen);
 
 
-    kintone.events.on('app.record.detail.show', function (event) {
-	//nicoscreen.set(obj);
-	//nicoscreen.start();
+//Record details event
+kintone.events.on('app.record.detail.show', function (event) {
 
-			var appId = kintone.app.getId();
-		var recordId = kintone.app.record.getId();
-		var bodyofcomments = [];
-		var tempcomment = "";
+	var appId = kintone.app.getId();
+	var recordId = kintone.app.record.getId();
+	var allrecordcomments = [];
+	var tempcomment = "";
 
-		//Return all comments in the record
-		function fetchComments(appId, recordId, opt_offset, opt_comments) {
-			var offset = opt_offset || 0;
-			var body = {
-			    "app": appId,
-			    "record": recordId,
-			    "offset": offset
-			};
-			var comments = opt_comments || [];
-			return kintone.api(kintone.api.url('/k/v1/record/comments', true), 'GET', body).then(function(resp) {
-			    comments = comments.concat(resp.comments);
-			    if (resp.older === true) {
-			        return fetchComments(appId,recordId, offset + 10, comments);
-			    }
-			    return comments;
-			});
-		}
-
-		function createNicoObject(comments){
-			var obj = {
-			
-			//Basic info for displayed text
-			"base":{
-				color:"#FFCC00", //Font color
-				speed:"slow", //Font speed - slow/fast/normal
-				interval:"normal",//Font interval - slow/fast/normal
-				font_size:"30px", //Font size。
-				loop:true //Loop if all text have been displayed - true/false
-				
-			},
-			
-			//Text to flow on the page. There is no limit.
-			"comments": bodyofcomments
-			};
-
-			return obj;
-		}
-
-		//
-		fetchComments(appId,recordId).then(function(resp){
-			for(var ci=0; ci<resp.length; ci++){
-				//console.log(resp[ci].creator.name + ":" + resp[ci].text);
-				tempcomment = resp[ci].creator.name + ":" + resp[ci].text;
-				bodyofcomments.push(tempcomment);
-				//console.log(bodyofcomments);
-			}
-			return bodyofcomments;
-		}).then(createNicoObject).then(function(obj){
-				nicoscreen.set(obj);
-				nicoscreen.start();
+	//Return all comments in the record
+	function fetchComments(appId, recordId, opt_offset, opt_comments) {
+		var offset = opt_offset || 0;
+		var body = {
+		    "app": appId,
+		    "record": recordId,
+		    "offset": offset
+		};
+		var comments = opt_comments || [];
+		return kintone.api(kintone.api.url('/k/v1/record/comments', true), 'GET', body).then(function(resp) {
+		    comments = comments.concat(resp.comments);
+		    if (resp.older === true) {
+		        return fetchComments(appId,recordId, offset + 10, comments);
+		    }
+		    return comments;
 		});
+	}
 
-    });
+	function createNicoObject(comments){
+		var NicoObject = {
+		//Basic info for displayed text
+		"nicosettings":{
+			color:"#FFCC00", //Font color
+			speed:"slow", //Font speed - slow/fast/normal
+			interval:"normal",//Font interval - slow/fast/normal
+			font_size:"30px", //Font size。
+			loop:true //Loop if all text have been displayed - true/false
+		},
+		
+		//Text to flow on the page. There is no limit.
+		"comments": allrecordcomments
+		};
 
+		return NicoObject;
+	}
+
+	//
+	fetchComments(appId,recordId).then(function(resp){
+		for(var ci=0; ci<resp.length; ci++){
+			tempcomment = resp[ci].creator.name + ":" + resp[ci].text;
+			allrecordcomments.push(tempcomment);
+		}
+		return allrecordcomments;
+	}).then(createNicoObject).then(function(NicoObject){
+			nicoscreen.set(NicoObject);
+			nicoscreen.start();
+	});
+
+});
